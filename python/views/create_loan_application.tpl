@@ -4,20 +4,10 @@
     <div class="col-lg-12">
         <h1>Create Loan Application</h1>
 
-        <pre>from requests import post, codes
-import json
+        <p>The following request will be sent as JSON. Please see <code>def create_loan_application</code> in
+        <code>getfinancing.py</code> for more details.</p>
 
-HOSTNAME = "api-test.getfinancing.com"
-USERNAME = "ws_Credex_sub"
-PASSWORD = "zo3FeiR`"
-MERCHANT_ID = "gf90c16012b52cd88ef2463befac03219c"
-
-HEADERS = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-}
-
-LOAN_APPLICATION_REQUEST = {
+        <pre>{
     "merchant_loan_id": "ACMECORP1055", # optional loan id on the merchant side
     "amount": "1001.99",
     "first_name": "John",
@@ -31,29 +21,7 @@ LOAN_APPLICATION_REQUEST = {
     ],
     "email": "johndoe@example.com",
     "version":"1.9",
-}
-
-def create_loan_application(data, merchant_id, hostname, username, password, test=False):
-    """Creates a loan application.
-
-    Example response:
-    {
-        u'amount': u'1001.99',
-        u'href': u'https://partner-test.getfinancing.com/partner-test/lc/info/4c5288b746bf22325f8abaafa83b119d',
-        u'inv_id': u'4c5288b746bf22325f8abaafa83b119d'
-    }
-    """
-    url = "https://%s/merchant/%s/requests" % (hostname, merchant_id)
-    verify = not test
-    response = post(url, json.dumps(data), auth=(username, password), headers=HEADERS, verify=verify)
-    if response.status_code != codes.ok:
-        raise RuntimeError('Creating loan application failed, HTTP code: %s, message: %s' %
-                           (response.status_code, response.text))
-
-    return json.loads(response.text)
-
-create_loan_application(LOAN_APPLICATION_REQUEST, MERCHANT_ID, HOSTNAME, USERNAME, PASSWORD)
-</pre>
+}</pre>
 
         <p><button id="send">Send request</button></p>
 
@@ -65,6 +33,11 @@ create_loan_application(LOAN_APPLICATION_REQUEST, MERCHANT_ID, HOSTNAME, USERNAM
             <p>Result:</p>
             <pre id="result"></pre>
             <button id="open_application">Open Loan Application</button>
+            <p>When you click "Open Loan Application" <code>new GetFinancing()</code> is called with the application URL
+            as a parameter and 2 JavaScript event handlers which are called on success or on abort.
+            The <code>GetFinancing</code> object is loaded in advance from
+            <code>https://partner.getfinancing.com/libs/1.0/getfinancing.js</code>.
+            Please see the source code of this page for more details.</p>
         </div>
 
     </div>

@@ -10,9 +10,11 @@ MERCHANT_ID = "gf90c16012b52cd88ef2463befac03219c"
 USERNAME = "cdx_demogetfinancing"
 PASSWORD = "OhG4ua^H"
 
+"""
 HOSTNAME = "api-test.getfinancing.com"
 USERNAME = "ws_Credex_sub"
 PASSWORD = "zo3FeiR`"
+"""
 
 HEADERS = {
     'Accept': 'application/json',
@@ -71,7 +73,7 @@ def view_create_loan_application():
     """View the create loan application page."""
     return {}
 
-@get('/ajax/create_loan_application')
+@route('/ajax/create_loan_application', method='POST')
 def ajax_create_loan_application():
     """AJAX handler to create loan application page."""
     try:
@@ -87,12 +89,17 @@ def view_loan_status_postbacks():
     postback_url = "http://%s:%d/getfinancing/postbacks" % (args.hostname, args.port)
     return locals()
 
-@get('/ajax/loan_status_postback')
+@route('/ajax/loan_status_postback', method='POST')
 def ajax_loan_status_postback():
     """AJAX handler that sends a loan status postback."""
-    return request.GET['request']
+    response = post(request.POST['url'], request.POST['request'])
+    if response.status_code != codes.ok:
+        return HTTPError(INTERNAL_SERVER_ERROR, 'Error sending postback, HTTP code: %s, message: %s' %
+                           (response.status_code, response.text))
 
-@bottle.post('/getfinancing/postbacks')
+    return response.text
+
+@route('/getfinancing/postbacks', method='POST')
 def handle_postback():
     """Handles a postback."""
     return '1'

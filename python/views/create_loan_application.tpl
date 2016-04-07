@@ -63,6 +63,7 @@ $("#send").click(function() {
 
     $.ajax({
         url: "/ajax/create_loan_application",
+        method: "POST",
         success: function(data) {
             $("#result").text(JSON.stringify(data, null, '\t'));
             $("#open_application").click(function() { new GetFinancing(data.href, onComplete, onAbort) });

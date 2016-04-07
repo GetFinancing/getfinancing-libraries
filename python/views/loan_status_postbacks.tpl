@@ -68,12 +68,13 @@ $("#send").click(function() {
     $("#result_wrapper").addClass("hidden");
 
     var data = {
-        'url': $("#postback_url").text(),
+        'url': $("#postback_url").val(),
         'request': $("#request").text()
     }
 
     $.ajax({
         url: "/ajax/loan_status_postback",
+        method: "POST",
         data: data,
         success: function(data) {
             $("#result").text(JSON.stringify(data, null, '\t'));

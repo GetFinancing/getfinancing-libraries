@@ -1,6 +1,6 @@
 import argparse
 import bottle
-from bottle import get, run, view, route, static_file, HTTPError, request
+from bottle import get, run, view, route, static_file, HTTPError, request, response
 from httplib import INTERNAL_SERVER_ERROR
 from requests import post, codes
 import json
@@ -86,23 +86,47 @@ def ajax_create_loan_application():
 @view('loan_status_postbacks')
 def view_loan_status_postbacks():
     """View the loan status postbacks page."""
-    postback_url = "http://%s:%d/getfinancing/postbacks" % (args.hostname, args.port)
-    return locals()
+    return {}
 
-@route('/ajax/loan_status_postback', method='POST')
-def ajax_loan_status_postback():
-    """AJAX handler that sends a loan status postback."""
-    response = post(request.POST['url'], request.POST['request'])
-    if response.status_code != codes.ok:
-        return HTTPError(INTERNAL_SERVER_ERROR, 'Error sending postback, HTTP code: %s, message: %s' %
-                           (response.status_code, response.text))
+@route('/getfinancing/postbacks', method='OPTIONS')
+def jquery_handle_options_request():
+    """Handles the jQuery OPTIONS request to the postback URL.
 
-    return response.text
+    This is NOT necessary in production.
+    """
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    return ''
+
+def handle_refund(loan_id, amount):
+    """Handles a refund postback for the specified loan_id and amount."""
+    return ''
+
+def handle_status_update(loan_id, new_status):
+    """Handles a status update for an order."""
+    # lookup order in your system using loan_id
+    # set order status to new_status
+    return ''
 
 @route('/getfinancing/postbacks', method='POST')
 def handle_postback():
     """Handles a postback."""
-    return '1'
+    # we need to set an Access-Control-Allow-Origin for use with the test AJAX postback sender
+    # in normal operations this is NOT needed
+    response.set_header('Access-Control-Allow-Origin', '*')
+
+    args = request.json
+    loan_id = args['request_token']
+    merchant_loan_id = args.get('merchant_transaction_id')
+    action = args['updates'].get('action')
+
+    if action == 'refund':
+        # process a refund
+        amount = args['updates']['amount']
+        return handle_refund(loan_id, amount)
+
+    loan_status = args['updates']['status']
+    return handle_status_update(loan_id, loan_status)
 
 def run_server(hostname, port):
     """Runs an HTTP server on the specified port in order to listen for postbacks."""
@@ -114,20 +138,6 @@ def run_server(hostname, port):
     print '\n\n\n'
     bottle.debug(True)
     run(host=hostname, port=port)
-
-def send_postback(url):
-    """Sends a postback to the test HTTP server listening on localhost on the specified TCP port.
-
-    This method is used ONLY for testing purposes, in a production scenario the postbacks will be sent to you
-    by the GetFinancing servers.
-    """
-    data = {}
-    response = post(url, json.dumps(data))
-    if response.status_code != codes.ok:
-        raise RuntimeError('Creating loan application failed, HTTP code: %s, message: %s' %
-                           (response.status_code, response.text))
-
-    response_data = json.loads(response.text)
 
 
 if __name__ == '__main__':
